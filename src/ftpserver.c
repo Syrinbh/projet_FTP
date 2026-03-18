@@ -33,8 +33,7 @@ void sigint_handler(int sig) {
 /* Traite une connexion client : lit la requête et répond */
 void handle_client(int connfd) {
     request_t req;
-    char filepath[FILENAME_MAX_LEN + sizeof(SERVER_DIR)]; // pour construire le chemin complet du fichier
-
+    char filepath[FILENAME_MAX_LEN + sizeof(SERVER_DIR)];
     if (Rio_readn(connfd, &req, sizeof(request_t)) <= 0)
         return;
 
