@@ -2,22 +2,12 @@
  * ftpclient.c - A simple FTP client
  */
 
-#include "csapp.h"
+#include "../include/csapp.h"
+#include "../include/ftp.h"
 #include <string.h>
 
 #define FTP_PORT     2121
 #define FILENAME_MAX_LEN 256
-
-typedef enum {
-    GET,
-    PUT,
-    LS
-} typereq_t;
-
-typedef struct {
-    typereq_t type;
-    char filename[FILENAME_MAX_LEN];
-} request_t;
 
 int main(int argc, char **argv)
 {
