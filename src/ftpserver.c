@@ -50,26 +50,27 @@ int main(void)
     listenfd = Open_listenfd(FTP_PORT);
     printf("FTP server listening on port %d\n", FTP_PORT);
 
-    /* Création du pool de NB_PROC processus fils */
+    /* Création du pool de fils */
     for (int i = 0; i < NB_PROC; i++) {
-        pid_t pid = Fork();
-        if (pid == 0) {
+        fils[i] = Fork();
+        if (fils[i] == 0) {
             /* --- Code du fils --- */
+            /* Le fils remet le handler par défaut pour SIGINT */
+            Signal(SIGINT, SIG_DFL);
             while (1) {
                 clientlen = sizeof(clientaddr);
                 connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
                 handle_client(connfd);
                 Close(connfd);
             }
-            exit(0); /* jamais atteint */
+            exit(0);
         }
-        /* Le père continue la boucle pour créer les autres fils */
     }
 
-    /* --- Code du père : attend un signal d'arrêt --- */
-    /* TODO : gérer SIGTERM / SIGINT pour tuer les fils proprement */
-    pause();
+    /* --- Code du père : attend un signal --- */
+    while (1) {
+        pause(); /* bloqué jusqu'à réception d'un signal */
+    }
 
-    Close(listenfd);
     exit(0);
 }
