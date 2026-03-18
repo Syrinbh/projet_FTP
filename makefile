@@ -1,29 +1,28 @@
-.PHONY: all, clean
+.PHONY: all clean
 
 # Disable implicit rules
 .SUFFIXES:
 
-CC=gcc
-CFLAGS=-Wall -g
-VPATH=src/
+CC      = gcc
+CFLAGS  = -Wall -g
+VPATH   = src/
+INCLDIR = -Iinclude/
 
-# Note: -lnsl does not seem to work on Mac OS but will
-# probably be necessary on Solaris for linking network-related functions 
-#LIBS += -lsocket -lnsl -lrt
-LIBS+=-lpthread
+LIBS    = -lpthread
 
-INCLUDE = readcmd.h csapp.h jobs.h
-OBJS = readcmd.o csapp.o jobs.o
-INCLDIR = -I.
+INCLUDE = include/csapp.h include/ftp.h
+OBJS    = csapp.o
 
-all: shell
+all: ftpserver ftpclient
 
 %.o: %.c $(INCLUDE)
-	$(CC) $(CFLAGS) $(INCLDIR) -c -o $@ $<
+	$(CC) $(CFLAGS) $(INCLDIR) -c -o $@ $
 
-%: %.o $(OBJS)
+ftpserver: ftpserver.o $(OBJS)
+	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
+
+ftpclient: ftpclient.o $(OBJS)
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
 
 clean:
-	rm -f shell *.o
-
+	rm -f ftpserver ftpclient *.o
