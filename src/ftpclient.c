@@ -1,45 +1,54 @@
 /*
- * echoclient.c - An echo client
+ * ftpclient.c - A simple FTP client
  */
+
 #include "csapp.h"
+#include <string.h>
+
+#define FTP_PORT     2121
+#define FILENAME_MAX_LEN 256
+
+typedef enum {
+    GET,
+    PUT,
+    LS
+} typereq_t;
+
+typedef struct {
+    typereq_t type;
+    char filename[FILENAME_MAX_LEN];
+} request_t;
 
 int main(int argc, char **argv)
 {
-    int clientfd, port;
-    char *host, buf[MAXLINE];
+    int clientfd;
+    request_t req;
+    char buf[MAXLINE];
     rio_t rio;
 
     if (argc != 3) {
-        fprintf(stderr, "usage: %s <host> <port>\n", argv[0]);
+        fprintf(stderr, "usage: %s <host> <filename>\n", argv[0]);
         exit(0);
     }
-    host = argv[1];
-    port = atoi(argv[2]);
 
-    /*
-     * Note that the 'host' can be a name or an IP address.
-     * If necessary, Open_clientfd will perform the name resolution
-     * to obtain the IP address.
-     */
-    clientfd = Open_clientfd(host, port);
-    
-    /*
-     * At this stage, the connection is established between the client
-     * and the server OS ... but it is possible that the server application
-     * has not yet called "Accept" for this connection
-     */
-    printf("client connected to server OS\n"); 
-    
+    /* Connexion au serveur FTP sur le port fixe 2121 */
+    clientfd = Open_clientfd(argv[1], FTP_PORT);
+    printf("client connected to FTP server\n");
+
+    /* Construction de la requête GET */
+    req.type = GET;
+    strncpy(req.filename, argv[2], FILENAME_MAX_LEN - 1);
+    req.filename[FILENAME_MAX_LEN - 1] = '\0';
+
+    /* Envoi de la requête */
+    Rio_writen(clientfd, &req, sizeof(request_t));
+
+    /* Réception et affichage de la réponse (contenu du fichier) */
     Rio_readinitb(&rio, clientfd);
-
-    while (Fgets(buf, MAXLINE, stdin) != NULL) {
-        Rio_writen(clientfd, buf, strlen(buf));
-        if (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
-            Fputs(buf, stdout);
-        } else { /* the server has prematurely closed the connection */
-            break;
-        }
+    while (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
+        Fputs(buf, stdout);
     }
+
     Close(clientfd);
     exit(0);
 }
