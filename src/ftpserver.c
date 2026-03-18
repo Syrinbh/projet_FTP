@@ -9,18 +9,23 @@
 #define NB_PROC      4
 #define FILENAME_MAX_LEN 256
 
-/* Types de requêtes */
-typedef enum {
-    GET,
-    PUT,
-    LS
-} typereq_t;
+/* Traitant de signal SIGINT pour le père */
+void sigint_handler(int sig) {
+    /* Retransmet SIGINT à chaque fils */
+    for (int i = 0; i < NB_PROC; i++) {
+        if (fils[i] > 0) {
+            Kill(fils[i], SIGINT);
+        }
+    }
 
-/* Structure d'une requête client */
-typedef struct {
-    typereq_t type;
-    char filename[FILENAME_MAX_LEN];
-} request_t;
+    /* Attend que tous les fils se terminent */
+    for (int i = 0; i < NB_PROC; i++) {
+        Waitpid(fils[i], NULL, 0);
+    }
+
+    printf("Serveur arrêté proprement.\n");
+    exit(0);
+}
 
 /* Traite une connexion client : lit la requête et répond */
 void handle_client(int connfd) {
