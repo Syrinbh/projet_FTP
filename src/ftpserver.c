@@ -1,52 +1,70 @@
 /*
- * echoserveri.c - An iterative echo server
+ * ftpserver.c - A concurrent FTP server using a process pool
  */
 
 #include "csapp.h"
+#include <string.h>
 
-#define MAX_NAME_LEN 256
+#define FTP_PORT     2121
+#define NB_PROC      4
+#define FILENAME_MAX_LEN 256
 
-void echo(int connfd);
+/* Types de requêtes */
+typedef enum {
+    GET,
+    PUT,
+    LS
+} typereq_t;
 
-/* 
- * Note that this code only works with IPv4 addresses
- * (IPv6 is not supported)
- */
-int main(int argc, char **argv)
-{
-    int listenfd, connfd, port;
-    socklen_t clientlen;
-    struct sockaddr_in clientaddr;
-    char client_ip_string[INET_ADDRSTRLEN];
-    char client_hostname[MAX_NAME_LEN];
-    
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s <port>\n", argv[0]);
-        exit(0);
+/* Structure d'une requête client */
+typedef struct {
+    typereq_t type;
+    char filename[FILENAME_MAX_LEN];
+} request_t;
+
+/* Traite une connexion client : lit la requête et répond */
+void handle_client(int connfd) {
+    request_t req;
+
+    /* Lire la requête envoyée par le client */
+    if (Rio_readn(connfd, &req, sizeof(request_t)) <= 0)
+        return;
+
+    if (req.type == GET) {
+        /* TODO : ouvrir le fichier req.filename et envoyer son contenu */
     }
-    port = atoi(argv[1]);
-    
-    clientlen = (socklen_t)sizeof(clientaddr);
-
-    listenfd = Open_listenfd(port);
-    while (1) {
-        
-        connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-
-        /* determine the name of the client */
-        Getnameinfo((SA *) &clientaddr, clientlen,
-                    client_hostname, MAX_NAME_LEN, 0, 0, 0);
-        
-        /* determine the textual representation of the client's IP address */
-        Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                  INET_ADDRSTRLEN);
-        
-        printf("server connected to %s (%s)\n", client_hostname,
-               client_ip_string);
-
-        echo(connfd);
-        Close(connfd);
-    }
-    exit(0);
+    /* TODO : gérer PUT, LS */
 }
 
+int main(void)
+{
+    int listenfd, connfd;
+    socklen_t clientlen;
+    struct sockaddr_in clientaddr;
+
+    listenfd = Open_listenfd(FTP_PORT);
+    printf("FTP server listening on port %d\n", FTP_PORT);
+
+    /* Création du pool de NB_PROC processus fils */
+    for (int i = 0; i < NB_PROC; i++) {
+        pid_t pid = Fork();
+        if (pid == 0) {
+            /* --- Code du fils --- */
+            while (1) {
+                clientlen = sizeof(clientaddr);
+                connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+                handle_client(connfd);
+                Close(connfd);
+            }
+            exit(0); /* jamais atteint */
+        }
+        /* Le père continue la boucle pour créer les autres fils */
+    }
+
+    /* --- Code du père : attend un signal d'arrêt --- */
+    /* TODO : gérer SIGTERM / SIGINT pour tuer les fils proprement */
+    pause();
+
+    Close(listenfd);
+    exit(0);
+}
