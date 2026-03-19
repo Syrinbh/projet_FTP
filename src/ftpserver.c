@@ -30,6 +30,9 @@ void sigint_handler(int sig) {
 void handle_client(int connfd) {
     request_t req;
     char filepath[FILENAME_MAX_LEN + sizeof(SERVER_DIR)];
+    int filefd;        
+    char buf[MAXLINE]; 
+    ssize_t n;    
 
     if (Rio_readn(connfd, &req, sizeof(request_t)) <= 0)
         return;
@@ -38,7 +41,17 @@ void handle_client(int connfd) {
         /* Construit le chemin complet : "server_files/calcul.c" */
         snprintf(filepath, sizeof(filepath), "%s%s", SERVER_DIR, req.filename);
 
-        /* TODO : ouvrir filepath et envoyer son contenu */
+        if ((filefd = open(filepath, O_RDONLY)) < 0) {
+            perror("open");
+            return;
+        }
+
+        /* Envoie le contenu du fichier au client par blocs */
+        while ((n = read(filefd, buf, MAXLINE)) > 0) {
+            Rio_writen(connfd, buf, n);
+        }
+        close(filefd);
+
     }
 }
 int main(int argc, char **argv)
