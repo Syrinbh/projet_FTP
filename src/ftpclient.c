@@ -6,9 +6,6 @@
 #include "../include/ftp.h"
 #include <string.h>
 
-#define FTP_PORT     2121
-#define FILENAME_MAX_LEN 256
-
 int main(int argc, char **argv)
 {
     int clientfd;

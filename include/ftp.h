@@ -2,8 +2,7 @@
 
 #ifndef FTP_H
 #define FTP_H
-
-#define FTP_PORT         2121
+#define FTP_PORT  "2121" //string et non int pour Open_clientfd
 #define NB_PROC          4
 #define FILENAME_MAX_LEN 256
 

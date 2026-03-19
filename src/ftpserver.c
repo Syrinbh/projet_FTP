@@ -6,10 +6,6 @@
 #include "../include/ftp.h"
 #include <string.h>
 
-#define FTP_PORT     2121
-#define NB_PROC      4
-#define FILENAME_MAX_LEN 256
-
 pid_t fils[NB_PROC]; // tableau pour stocker les PID des fils
 
 /* Traitant de signal SIGINT pour le père */
@@ -34,6 +30,7 @@ void sigint_handler(int sig) {
 void handle_client(int connfd) {
     request_t req;
     char filepath[FILENAME_MAX_LEN + sizeof(SERVER_DIR)];
+
     if (Rio_readn(connfd, &req, sizeof(request_t)) <= 0)
         return;
 
@@ -49,15 +46,12 @@ int main(int argc, char **argv)
     int listenfd, connfd;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
-
-    char client_ip_string[INET_ADDRSTRLEN]; //a enlever si pas besoin d'afficher l'IP du client
-    char client_hostname[MAX_NAME_LEN];
     
     /* Installation du traitant SIGINT AVANT la création des fils */
     Signal(SIGINT, sigint_handler); //on installe avant fork 
     
     listenfd = Open_listenfd(FTP_PORT);
-    printf("FTP server listening on port %d\n", FTP_PORT);
+    printf("FTP server listening on port %s\n", FTP_PORT);
 
     /* Création du pool de fils */
     for (int i = 0; i < NB_PROC; i++) {
