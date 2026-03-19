@@ -17,8 +17,8 @@ typedef enum
 } typereq_t;
 
 typedef struct {
-    typereq_t  type;    /* Type de la requête  */
-    char filename[FILENAME_MAX_LEN]; /* Nom du fichier */
+    typereq_t  type;    // Type de la requête  
+    char filename[FILENAME_MAX_LEN]; // Nom du fichier 
 } request_t;
 
 

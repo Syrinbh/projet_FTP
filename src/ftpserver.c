@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < NB_PROC; i++) {
         fils[i] = Fork();
         if (fils[i] == 0) {
-            /* --- Code du fils --- */
+            /* Code du fils */
             /* Le fils remet le handler par défaut pour SIGINT */
             Signal(SIGINT, SIG_DFL);
 
@@ -71,9 +71,9 @@ int main(int argc, char **argv)
         }
     }
 
-    /* --- Code du père : attend un signal --- */
+    /* Code du père : attend un signal  */
     while (1) {
-        pause(); /* bloqué jusqu'à réception d'un signal */
+        pause(); 
     }
 
     exit(0);
