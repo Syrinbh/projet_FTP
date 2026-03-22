@@ -10,6 +10,7 @@ int main(int argc, char **argv)
 {
     int clientfd;
     request_t req;
+    response_t response; 
     char buf[MAXLINE];
     rio_t rio;
 
@@ -29,6 +30,16 @@ int main(int argc, char **argv)
 
     /* Envoi de la requête */
     Rio_writen(clientfd, &req, sizeof(request_t));
+
+    /*lecture header de response*/
+    response_t response; 
+    Rio_readn(clientfd, &response, sizeof(response_t));
+
+    if (response.status != OK) {
+        fprintf(stderr, "%s\n", response.message);
+        Close(clientfd);
+        exit(1);
+    }
 
     /* Réception et affichage de la réponse (contenu du fichier) */
     Rio_readinitb(&rio, clientfd);

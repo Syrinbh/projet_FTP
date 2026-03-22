@@ -21,5 +21,16 @@ typedef struct {
     char filename[FILENAME_MAX_LEN]; // Nom du fichier 
 } request_t;
 
+typedef enum {
+    OK = 0, 
+    ERROR = 1,
+} response_status_t;
+
+typedef struct {
+    int status;
+    size_t filesize; 
+    char message[MAXLINE];
+} response_t;
+
 
 #endif
